@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+function stash-pop() {
+  if [ "$1" = "list" ]; then
+      eval git stash list
+
+  elif [ "$1" = "show" ]; then
+      TARGET_STASH="$(git stash list | fzf)"
+      eval git stash show -p ${TARGET_STASH%%:*}
+
+  elif [ "$1" = "save" ]; then
+      echo "-----------------------------"
+      echo "Stash内容の説明を入力"
+      read STASH_MESSAGE
+
+      eval git stash save "$STASH_MESSAGE"
+
+  elif [ "$1" = "pop" ]; then
+      TARGET_STASH="$(git stash list | fzf)"
+      CURRENT_BRANCH="$(git status --branch --porcelain | head -n 1 | sed 's/## //')"
+      TARGET_BRANCH_STASHNUM=${TARGET_STASH%:*}
+      TARGET_BRANCH=${TARGET_BRANCH_STASHNUM##* }
+      if [ $CURRENT_BRANCH != $TARGET_BRANCH ]; then
+          echo "----------------------------------"
+          echo "取り出そうとしているstashは現在のブランチの作業ではないです。取り出しますか？[y/N]"
+          read IS_POP
+          case $IS_POP in
+              [yY])
+                  echo "-------------------------------"
+                  echo "選択したstashを残しますか？ [y/N]"
+                  read IS_REMAIN_STASH
+                  case $IS_REMAIN_STASH in
+                      [yY]) eval git stash apply ${TARGET_STASH%%:*};;
+                      [nN]) eval git stash pop ${TARGET_STASH%%:*};;
+                  esac
+                  ;;
+              [nN]) exit;;
+          esac
+      else
+          echo "-------------------------------"
+          echo "選択したstashを残しますか？ [y/N]"
+          read IS_REMAIN_STASH
+          case $IS_REMAIN_STASH in
+              [yY]) eval git stash apply ${TARGET_STASH%%:*};;
+              [nN]) eval git stash pop ${TARGET_STASH%%:*};;
+          esac
+      fi
+
+
+  elif [ "$1" = "drop"]; then
+      TARGET_STASH="$(git stash list | fzf)"
+      REGEX="/(^.*)(?=: On)/"
+
+      echo "-------------------------------"
+      echo "選択したstashを削除します。よろしいですか？[y/N]"
+      read IS_DELETE_STASH
+      case $IS_DELETE_STASH in
+          [yY]) eval git stash drop ${TARGET_STASH%%:*};;
+          [nN]) exit;;
+      esac
+  fi
+}
