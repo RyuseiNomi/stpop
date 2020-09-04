@@ -48,7 +48,7 @@ function stash-pop() {
       fi
 
 
-  elif [ "$1" = "drop"]; then
+  elif [ "$1" = "drop" ]; then
       TARGET_STASH="$(git stash list | fzf)"
       REGEX="/(^.*)(?=: On)/"
 
