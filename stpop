@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 function stash-pop() {
+  echo $1
   if [ "$1" = "list" ]; then
       eval git stash list
 
@@ -61,4 +62,4 @@ function stash-pop() {
   fi
 }
 
-stash-pop
+stash-pop $1
